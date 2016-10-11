@@ -8,25 +8,55 @@ import PreviewItem from './PreviewItem';
 class GalleryGrid extends Component {
 	constructor(props) {
 		super(props);
+
+		this.state = {
+			current: 0,
+			isGrid: true
+		}
 	}
 
-	render() {
+	_renderGrid(){
 		return (
 			<View style={styles.wrapper}>
 				<ScrollView>
 					<View style={styles.container}>
 						{this.props.gallery
 							.map( (item, index) => 
-								<PreviewItem key={item.originalUrl.split('?')[1]} item={item} />
-								// <GalleryGridThumb 
-								// 	key={item.thumbnailUrl.split('?')[1]} 
-								// 	onPressBtn={() => { this.props.navigator.push({name: 'GalleryGridItem', gallery: this.props.gallery, current: index}); }} 
-								// 	item={item} /> 
+								<GalleryGridThumb 
+									key={item.thumbnailUrl.split('?')[1]} 
+									onPressBtn={() => { 
+										// this.props.navigator.push({name: 'GalleryGridItem', gallery: this.props.gallery, current: index}); 
+										this.setState( {isGrid: false, current: index} );
+									}} 
+									item={item} /> 
 							)}
 					</View>
 				</ScrollView>
 			</View>
 		)
+	}
+
+	_renderView() {
+		return (
+				<View style={styles.wrapper}>
+					<ScrollView 
+						ref={scrollView => (this._scrollView = scrollView)}
+						horizontal={true} 
+						style={styles.horscroll}
+						pagingEnabled={true}
+						// onScroll={e => { this._onScroll(e) }}
+		 				scrollEventThrottle={200}
+						>
+						<PreviewItem key={this.props.gallery[this.state.current-1].originalUrl.split('?')[1]} item={this.props.gallery[this.state.current-1]} />
+						<PreviewItem key={this.props.gallery[this.state.current].originalUrl.split('?')[1]} item={this.props.gallery[this.state.current]} />
+						<PreviewItem key={this.props.gallery[this.state.current+1].originalUrl.split('?')[1]} item={this.props.gallery[this.state.current+1]} />
+			    </ScrollView>
+			  </View>  
+			)
+	}
+
+	render() {
+		return (this.state.isGrid)? this._renderGrid() : this._renderView();
 	}
 }
 
