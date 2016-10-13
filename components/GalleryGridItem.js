@@ -5,168 +5,19 @@ import PreviewItem from './PreviewItem';
 class GalleryGridItem extends Component {
 	constructor(props) {
 		super(props);
-		this._setNextPosition(this.props.current);
-		// const prev = (this.props.current > 0)? [this.props.gallery[this.props.current - 1]]: [];
-		// const next = (this.props.current + 1 < this.props.gallery.length)? [this.props.gallery[this.props.current + 1]]: [];
-		// this.state = {
-		// 	current: this.props.current,
-		// 	items: [...prev, ...[this.props.gallery[this.props.current]], ...next]
-		// }
-		// console.log('item', prev, next, this.state);
-	}
-
-	_setNextPosition(current) {
-		let prev = (current > 0)? [this.props.gallery[current - 1]]: [];
-		let next = (current + 1 < this.props.gallery.length)? [this.props.gallery[current + 1]]: [];
+		const prev = (this.props.current > 0)? [this.props.gallery[this.props.current - 1]]: [];
+		const next = (this.props.current + 1 < this.props.gallery.length)? [this.props.gallery[this.props.current + 1]]: [];
 		this.state = {
-			current: current,
-			lastScrollPos: 375,
-			items: [...prev, ...[this.props.gallery[current]], ...next]
+			scrollable: true,
+			direction: 'left',
+			current: this.props.current,
+			width: Dimensions.get('window').width,
+			items: [...prev, ...[this.props.gallery[this.props.current]], ...next]
 		}
-		console.log('!!!!', this.state );
-	}
-
-	_addNext() {
-		const nextIndex = this.state.current + 1;
-		if (0 === this.props.gallery.length - nextIndex) {
-			return
-		}
-		this.setState({
-			items: [
-				...this.state.items, 
-				<PreviewItem 
-					key={this.props.gallery[nextIndex].originalUrl.split('?')[1]} 
-					item={this.props.gallery[nextIndex]} />
-			]
-		});
-	}
-
-	_addPrev() {
-		const prevIndex = this.state.current - 1;
-		if (prevIndex < 0) {
-			return
-		}
-		this.setState({
-			items: [
-			<PreviewItem 
-					key={this.props.gallery[prevIndex].originalUrl.split('?')[1]} 
-					item={this.props.gallery[prevIndex]} />,
-				...this.state.items
-		]
-		});
-	}
-
-	_addPrevNext() {
-		let prevItem = [];
-		let nextItem = [];
-
-		if (this.state.current + 1 < this.props.gallery.length) {
-			nextItem = [
-				<PreviewItem 
-					key={this.props.gallery[this.state.current + 1].originalUrl.split('?')[1]} 
-					item={this.props.gallery[this.state.current + 1]} 
-				/>
-			]
-		}
-		
-		if (this.state.current > 0) {
-			prevItem = [
-				<PreviewItem 
-					key={this.props.gallery[this.state.current - 1].originalUrl.split('?')[1]} 
-					item={this.props.gallery[this.state.current - 1]} 
-				/>,
-			]
-		}
-
-		this.setState({
-			items: [
-				prevItem,
-				...this.state.items,
-				nextItem
-		]
-		});	
-	}
-
-	_getPosition(index) {
-		return Dimensions.get('window').width * index;
-	}
-
-	componentWillMount() {
-		// this._addPrevNext();
 	}
 
 	componentDidMount() {
-		// console.log(this._scrollView);
-
-    this._scrollView.scrollTo({
-    	x:this._getPosition(1), 
-    	y:0, 
-    	animated: true
-    });
-
-    // this.setState ({
-    // 	items: this.props.gallery
-    // });
-	}
-
-	componentWillUpdate(nextProps, nextState) {
-		// console.log( nextProps, nextState )      
-	}
-
-	componentDidUpdate(prevProps, prevState) {
-	  // console.log( 'update', this.state )   
-	}
-
-
-	_getNextItems(current) {
-		if ( current + 2 < this.props.gallery.length ) {
-			return [...this.state.items, this.props.gallery[this.state.current + 2]];
-		} else {
-			return this.state.items;
-		}
-	}
-
-	_getPrevItems(current) {
-		if ( current > 2 ) {
-			return [this.props.gallery[this.state.current - 2], ...this.state.items ];
-		} else {
-			return this.state.items;
-		}
-	}
-
-	_onScroll(e) {
-		console.log(e.nativeEvent.contentOffset.x);
-		if ( e.nativeEvent.contentOffset.x > this.state.lastScrollPos + 375 * .5 ) {
-			this.setState({
-				lastScrollPos: this.state.lastScrollPos + 375,
-				current: this.state.current + 1,
-				items: this._getNextItems(this.state.current)
-			});
-
-		} else if ( e.nativeEvent.contentOffset.x < this.state.lastScrollPos - 375 * .5  ) {
-			this.setState({
-				lastScrollPos: (this.state.lastScrollPos > 375 )? this.state.lastScrollPos - 375 : 375,
-				current: this.state.current - 1,
-				items: this._getPrevItems(this.state.current)
-			});	
-
-						this._scrollView.scrollTo({
-	    	x:this._getPosition(1), 
-	    	y:0, 
-	    	animated: false
-	    });
-		}
-
-
-
-
-		// this._scrollView.scrollTo({
-  //   	x:this._getPosition(1), 
-  //   	y:0, 
-  //   	animated: false
-  //   });
-
-	// 	console.log('3333', this.state);
+    this._fastScroll();
 	}
 
 	render() {
@@ -176,31 +27,94 @@ class GalleryGridItem extends Component {
 				horizontal={true} 
 				style={styles.horscroll}
 				pagingEnabled={true}
-				// onScrollEndDrag={e => { this._onScrollEnd(e) }}
-				onScroll={e => { this._onScroll(e) }}
+				scrollEnabled={this.state.scrollable}
+				onScrollEndDrag={this._onScrollEndDrag}
+				onContentSizeChange={this._onContentSizeChange}
+				onMomentumScrollEnd={this._onScrollEnd}
  				scrollEventThrottle={200}
 				>
 				{this.state.items.map( item => <PreviewItem key={item.originalUrl.split('?')[1]} item={item} /> )}
 	    </ScrollView>
 		)
 	}
+
+	_fastScroll = () => {
+		this._scrollView.scrollTo({
+    	x: this.state.width, 
+    	y: 0, 
+    	animated: false
+    });
+	}
+
+	_addPrev = () => {
+		let newCurrent = (this.state.current > 1) ? this.state.current - 1 : 0;
+		let newItem = this.props.gallery[newCurrent];
+		if ( this.state.items.indexOf(newItem) === -1 ) {
+			this.setState({
+				items: [newItem, ...this.state.items]
+			});
+			this._fastScroll();
+		} 
+	}
+
+	_addNext = () => {
+		let last = this.props.gallery.length - 1;
+		let newCurrent = (this.state.current < last ) ? this.state.current + 1 : last;
+		let newItem = this.props.gallery[newCurrent];
+		if ( this.state.items.indexOf(newItem) === -1 ) {
+			this.setState({
+				items: [...this.state.items, newItem]
+			});
+		} 
+	}
+
+	_onScrollEnd = () => {
+		if ( !this.state.scrollable ) {
+			if ( this.state.direction === 'left' ) {
+				this._addNext();	
+			}
+			if ( this.state.direction === 'right' ) {
+				this._addPrev();	
+			}
+			this.setState({
+				scrollable: true,
+			});		
+		}
+		
+	}
+
+	_onScrollEndDrag = (e) => {
+		if ( e.nativeEvent.targetContentOffset.x < this.state.width ) {
+			this.setState({
+				direction: 'right',
+				scrollable: false,
+				current: this.state.current - 1
+			});	
+		} else if ( e.nativeEvent.targetContentOffset.x > this.state.width ) {
+			this.setState({
+				direction: 'left',
+				scrollable: false,
+				current: this.state.current + 1
+			});	
+		}
+	}
+
+	_onContentSizeChange = () => {
+		this.setState({
+			scrollable: true,
+		});
+		console.log('csc');
+	}
+
 }
 
 const styles = StyleSheet.create({
 	horscroll: {
 		flex: 1,
 		flexDirection: 'row',
-		// flexWrap: 'nowrap',
 		alignSelf: 'stretch',
 	},
 
 })
 
 export default GalleryGridItem;
-
-// {this.props.gallery.map( i => <PreviewItem item={i} /> )}
-
-// onScroll={() => { console.log( this.state ) }}
-// 				scrollEventThrottle={200}
-
-// {this.props.gallery.map( item => <PreviewItem key={item.originalUrl.split('?')[1]} item={item} /> )}

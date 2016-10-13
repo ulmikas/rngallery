@@ -18,7 +18,7 @@ class GalleryGridThumb extends Component {
 
 const styles = StyleSheet.create({
 	imgwrapper: {
-		backgroundColor: 'blue',
+		backgroundColor: '#ccc',
 		flexDirection: 'column',
 		margin: 10,
 		minWidth: 100,

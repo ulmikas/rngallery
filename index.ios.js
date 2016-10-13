@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, Navigator, StyleSheet } from 'react-native';
+import { AppRegistry, Navigator } from 'react-native';
 
 import WelcomeScreen from './components/WelcomeScreen';
 import GalleryGrid from './components/GalleryGrid';
@@ -50,14 +50,5 @@ class gallery extends Component {
 		}
 	}
 }
-
-const styles = StyleSheet.create({
-	welcome: {
-		flex: 1,
-		flexDirection: 'column',
-		justifyContent: 'center',
-		alignItems: 'center'
-	}
-})
 
 AppRegistry.registerComponent('gallery', () => gallery);
