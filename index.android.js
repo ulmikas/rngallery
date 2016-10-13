@@ -1,53 +1,54 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
-
 import React, { Component } from 'react';
-import {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
+import { AppRegistry, Navigator } from 'react-native';
+
+import WelcomeScreen from './components/WelcomeScreen';
+import GalleryGrid from './components/GalleryGrid';
+import GalleryGridItem from './components/GalleryGridItem';
 
 class gallery extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: true,
+      current: 0,
+      gallery: []
+    }
+  }
+
+  onAfterLoad = (data) => {
+    this.setState({ 
+      gallery: data,
+      current: 0,
+      loading: false
+    })
+  }
+
+  componentWillMount() {
+    fetch('https://s3.amazonaws.com/vgv-public/tests/astro-native/task.json')
+      .then( response => response.json() )
+      .then(this.onAfterLoad)
+  }
+
   render() {
+    if (this.state.loading) {
+      return ( <WelcomeScreen /> )
+    }
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit index.android.js
-        </Text>
-        <Text style={styles.instructions}>
-          Double tap R on your keyboard to reload,{'\n'}
-          Shake or press menu button for dev menu
-        </Text>
-      </View>
+      <Navigator
+        initialRoute={{name: 'GalleryGrid', gallery: this.state.gallery, current: this.state.current, index: 0}}
+        renderScene={this.navigationRenderScene}
+      />
     );
   }
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
+  navigationRenderScene(route, navigator) {
+    switch (route.name) {
+      case 'GalleryGrid':
+        return ( <GalleryGrid navigator={navigator} gallery={route.gallery} />);
+      case 'GalleryGridItem':
+        return ( <GalleryGridItem navigator={navigator} gallery={route.gallery} current={route.current} /> );
+    }
+  }
+}
 
 AppRegistry.registerComponent('gallery', () => gallery);
